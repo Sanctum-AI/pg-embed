@@ -1,5 +1,5 @@
 use pg_embed::pg_enums::PgAuthMethod;
-use pg_embed::pg_fetch::{PgFetchSettings, PG_V13};
+use pg_embed::pg_fetch::{PgFetchSettings, PG_V16};
 use pg_embed::postgres::{PgEmbed, PgSettings};
 use sqlx_tokio::postgres::PgPoolOptions;
 use std::error::Error;
@@ -11,8 +11,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Postgresql settings
     let pg_settings = PgSettings {
         // Where to store the postgresql database
-        database_dir: PathBuf::from("data/db"),
-        cache_dir: None,
+        database_dir: PathBuf::from("data").join("db"),
+        cache_dir: Some(PathBuf::from("data").join("cache")),
         port: 5432,
         user: "postgres".to_string(),
         password: "password".to_string(),
@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Postgresql binaries download settings
     let fetch_settings = PgFetchSettings {
-        version: PG_V13,
+        version: PG_V16,
         ..Default::default()
     };
 

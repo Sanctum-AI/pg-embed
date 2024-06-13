@@ -66,8 +66,16 @@ impl PgAccess {
         cache_dir: Option<&PathBuf>,
     ) -> Result<Self, PgEmbedError> {
         let cache_dir = match cache_dir {
-            Some(d) => d.clone(),
-            None => Self::create_cache_dir_structure(&fetch_settings).await?,
+            Some(d) => {
+                std::fs::create_dir_all(&d)
+                    .map_err(|e| PgEmbedError {
+                        error_type: PgEmbedErrorType::DirCreationError,
+                        source: Some(Box::new(e)),
+                        message: None,
+                    })?;
+                d.clone()
+            },
+            None => Self::create_cache_dir_structure(&fetch_settings)?,
         };
 
         Self::create_db_dir_structure(database_dir).await?;
@@ -104,7 +112,7 @@ impl PgAccess {
     ///
     /// Returns PathBuf(cache_directory) on success, an error otherwise
     ///
-    async fn create_cache_dir_structure(fetch_settings: &PgFetchSettings) -> PgResult<PathBuf> {
+    fn create_cache_dir_structure(fetch_settings: &PgFetchSettings) -> PgResult<PathBuf> {
         let cache_dir = dirs::cache_dir().ok_or_else(|| PgEmbedError {
             error_type: PgEmbedErrorType::InvalidPgUrl,
             source: None,
@@ -127,13 +135,12 @@ impl PgAccess {
         );
         let mut cache_pg_embed = cache_dir.clone();
         cache_pg_embed.push(pg_path);
-        tokio::fs::create_dir_all(&cache_pg_embed)
+        std::fs::create_dir_all(&cache_pg_embed)
             .map_err(|e| PgEmbedError {
                 error_type: PgEmbedErrorType::DirCreationError,
                 source: Some(Box::new(e)),
                 message: None,
-            })
-            .await?;
+            })?;
         Ok(cache_pg_embed)
     }
 
