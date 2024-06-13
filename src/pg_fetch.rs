@@ -7,7 +7,6 @@
 use bytes::Bytes;
 use futures::TryFutureExt;
 use reqwest::Response;
-use std::future::Future;
 
 use crate::pg_enums::{Architecture, OperationSystem};
 use crate::pg_errors::{PgEmbedError, PgEmbedErrorType};
@@ -117,7 +116,7 @@ mod tests {
     #[tokio::test]
     async fn fetch_postgres() -> Result<(), PgEmbedError> {
         let pg_settings = PgFetchSettings::default();
-        pg_settings.fetch_postgres().await;
+        pg_settings.fetch_postgres().await?;
         Ok(())
     }
 }

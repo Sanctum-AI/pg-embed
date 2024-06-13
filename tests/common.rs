@@ -19,6 +19,7 @@ pub async fn setup(
         .try_init();
     let pg_settings = PgSettings {
         database_dir,
+        cache_dir: None,
         port,
         user: "postgres".to_string(),
         password: "password".to_string(),

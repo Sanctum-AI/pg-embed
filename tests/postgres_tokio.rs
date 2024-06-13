@@ -146,6 +146,7 @@ async fn postgres_server_timeout() -> Result<(), PgEmbedError> {
         .try_init();
     let pg_settings = PgSettings {
         database_dir,
+        cache_dir: None,
         port: 5432,
         user: "postgres".to_string(),
         password: "password".to_string(),
