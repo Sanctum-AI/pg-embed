@@ -13,8 +13,6 @@ use tokio::process::Child;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::time::Duration;
 
-const CREATE_NO_WINDOW: u32 = 0x08000000;
-
 ///
 /// Output logging type
 ///
@@ -121,7 +119,10 @@ where
         let mut command = tokio::process::Command::new(executable_path);
         command.args(args);
         #[cfg(target_os = "windows")]
-        command.creation_flags(CREATE_NO_WINDOW);
+        {
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            command.creation_flags(CREATE_NO_WINDOW);
+        }
         command
     }
 
