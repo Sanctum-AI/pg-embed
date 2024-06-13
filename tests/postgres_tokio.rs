@@ -18,7 +18,7 @@ mod common;
 #[tokio::test]
 #[serial]
 async fn postgres_server_start_stop() -> Result<(), PgEmbedError> {
-    let mut pg = common::setup(5432, PathBuf::from("data_test/db"), false, None).await?;
+    let mut pg = common::setup(5432, PathBuf::from("data_test").join("db"), false, None).await?;
     {
         let server_status = *pg.server_status.lock().await;
         assert_eq!(server_status, PgServerStatus::Initialized);
@@ -42,7 +42,7 @@ async fn postgres_server_start_stop() -> Result<(), PgEmbedError> {
 #[tokio::test]
 #[serial]
 async fn postgres_server_drop() -> Result<(), PgEmbedError> {
-    let db_path = PathBuf::from("data_test/db");
+    let db_path = PathBuf::from(PathBuf::from("data_test").join("db"));
     {
         let mut pg = common::setup(5432, db_path.clone(), false, None).await?;
         pg.start_db().await?;
@@ -60,8 +60,8 @@ async fn postgres_server_multiple_concurrent() -> Result<(), PgEmbedError> {
     PgAccess::purge().await?;
 
     let tasks = vec![
-        common::setup(5432, PathBuf::from("data_test/db1"), false, None),
-        common::setup(5434, PathBuf::from("data_test/db3"), false, None),
+        common::setup(5432, PathBuf::from(PathBuf::from("data_test").join("db1")), false, None),
+        common::setup(5434, PathBuf::from("data_test").join("db3"), false, None),
     ];
 
     let wrap_with_mutex =
@@ -101,7 +101,7 @@ async fn postgres_server_multiple_concurrent() -> Result<(), PgEmbedError> {
 #[tokio::test]
 #[serial]
 async fn postgres_server_persistent_true() -> Result<(), PgEmbedError> {
-    let db_path = PathBuf::from("data_test/db");
+    let db_path = PathBuf::from("data_test").join("db");
     let mut database_dir = PathBuf::new();
     let mut pw_file_path = PathBuf::new();
     {
@@ -125,7 +125,7 @@ async fn postgres_server_persistent_true() -> Result<(), PgEmbedError> {
 #[tokio::test]
 #[serial]
 async fn postgres_server_persistent_false() -> Result<(), PgEmbedError> {
-    let db_path = PathBuf::from("data_test/db");
+    let db_path = PathBuf::from("data_test").join("db");
     {
         let _pg = common::setup(5432, db_path.clone(), false, None).await?;
         let file_exists = PgAccess::pg_version_file_exists(&db_path).await?;
@@ -140,7 +140,7 @@ async fn postgres_server_persistent_false() -> Result<(), PgEmbedError> {
 #[tokio::test]
 #[serial]
 async fn postgres_server_timeout() -> Result<(), PgEmbedError> {
-    let database_dir = PathBuf::from("data_test/db");
+    let database_dir = PathBuf::from("data_test").join("db");
     let _ = env_logger::Builder::from_env(Env::default().default_filter_or("info"))
         .is_test(true)
         .try_init();

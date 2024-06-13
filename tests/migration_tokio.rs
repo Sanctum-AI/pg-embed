@@ -16,7 +16,7 @@ mod common;
 #[tokio::test]
 #[serial]
 async fn db_create_database() -> Result<(), PgEmbedError> {
-    let mut pg = common::setup(5432, PathBuf::from("data_test/db"), false, None).await?;
+    let mut pg = common::setup(5432, PathBuf::from("data_test").join("db"), false, None).await?;
     pg.start_db().await?;
     let db_name = "test";
 
@@ -28,7 +28,7 @@ async fn db_create_database() -> Result<(), PgEmbedError> {
 #[tokio::test]
 #[serial]
 async fn db_drop_database() -> Result<(), PgEmbedError> {
-    let mut pg = common::setup(5432, PathBuf::from("data_test/db"), false, None).await?;
+    let mut pg = common::setup(5432, PathBuf::from("data_test").join("db"), false, None).await?;
     pg.start_db().await?;
     let db_name = "test";
 
@@ -45,7 +45,7 @@ async fn db_drop_database() -> Result<(), PgEmbedError> {
 async fn db_migration() -> Result<(), PgEmbedError> {
     let mut pg = common::setup(
         5432,
-        PathBuf::from("data_test/db"),
+        PathBuf::from("data_test").join("db"),
         false,
         Some(PathBuf::from("migration_test")),
     )
