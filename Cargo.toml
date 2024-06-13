@@ -45,9 +45,10 @@ async-trait = "0.1"
 xz2 = "0.1"
 tar = "0.4"
 
+
 [dev-dependencies]
-serial_test = "2.0.0"
-env_logger = "0.10"
+serial_test = "3"
+env_logger = "0.11"
 
 [[test]]
 name = "migration_tokio"

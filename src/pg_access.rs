@@ -72,11 +72,9 @@ impl PgAccess {
 
         Self::create_db_dir_structure(database_dir).await?;
         // pg_ctl executable
-        let mut pg_ctl = cache_dir.clone();
-        pg_ctl.push("bin/pg_ctl");
+        let pg_ctl = cache_dir.clone().join("bin").join("pg_ctl");
         // initdb executable
-        let mut init_db = cache_dir.clone();
-        init_db.push("bin/initdb");
+        let init_db = cache_dir.clone().join("bin").join("initdb");
         // postgres zip file
         let mut zip_file_path = cache_dir.clone();
         let platform = fetch_settings.platform();
@@ -168,6 +166,13 @@ impl PgAccess {
             self.cache_dir.display()
         );
         pg_unpack::unpack_postgres(&self.zip_file_path, &self.cache_dir).await?;
+        tokio::fs::remove_file(&self.zip_file_path)
+            .await
+            .map_err(|e| PgEmbedError {
+                error_type: PgEmbedErrorType::PgCleanUpFailure,
+                source: Some(Box::new(e)),
+                message: None,
+            })?;
 
         lock.insert(self.cache_dir.clone(), PgAcquisitionStatus::Finished);
         Ok(())

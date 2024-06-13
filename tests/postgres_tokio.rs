@@ -8,7 +8,7 @@ use env_logger::Env;
 use pg_embed::pg_access::PgAccess;
 use pg_embed::pg_enums::{PgAuthMethod, PgServerStatus};
 use pg_embed::pg_errors::PgEmbedError;
-use pg_embed::pg_fetch::{PgFetchSettings, PG_V15};
+use pg_embed::pg_fetch::{PgFetchSettings, PG_V16};
 use pg_embed::postgres::{PgEmbed, PgSettings};
 use std::time::Duration;
 
@@ -156,7 +156,7 @@ async fn postgres_server_timeout() -> Result<(), PgEmbedError> {
         migration_dir: None,
     };
     let fetch_settings = PgFetchSettings {
-        version: PG_V15,
+        version: PG_V16,
         ..Default::default()
     };
     let mut pg = PgEmbed::new(pg_settings, fetch_settings).await?;
