@@ -36,14 +36,14 @@ sqlx_tokio = { version = "0.6", features = [
     "postgres",
     "migrate",
 ], package = "sqlx", optional = true }
-zip = "0.6"
+zip = "2"
 log = "0.4"
-dirs = "5.0.1"
-bytes = "1.0"
+dirs = "5"
+bytes = "1.6"
 lazy_static = "1.4"
 async-trait = "0.1"
-xz2 = "0.1.7"
-tar = "0.4.39"
+xz2 = "0.1"
+tar = "0.4"
 
 [dev-dependencies]
 serial_test = "2.0.0"
