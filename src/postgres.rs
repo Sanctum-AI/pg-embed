@@ -12,14 +12,13 @@ use std::time::Duration;
 
 use futures::TryFutureExt;
 use log::{error, info};
-use tokio::sync::Mutex;
-
 #[cfg(feature = "rt_tokio_migrate")]
 use sqlx_tokio::migrate::{MigrateDatabase, Migrator};
 #[cfg(feature = "rt_tokio_migrate")]
 use sqlx_tokio::postgres::PgPoolOptions;
 #[cfg(feature = "rt_tokio_migrate")]
 use sqlx_tokio::Postgres;
+use tokio::sync::Mutex;
 
 use crate::command_executor::AsyncCommand;
 use crate::pg_access::PgAccess;

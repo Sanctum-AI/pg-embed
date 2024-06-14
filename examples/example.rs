@@ -1,3 +1,4 @@
+use pg_embed::pg_access::PgAccess;
 use pg_embed::pg_enums::PgAuthMethod;
 use pg_embed::pg_fetch::{PgFetchSettings, PG_V16};
 use pg_embed::postgres::{PgEmbed, PgSettings};
@@ -8,11 +9,12 @@ use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let cache_dir = PathBuf::from("data").join("cache");
     // Postgresql settings
     let pg_settings = PgSettings {
         // Where to store the postgresql database
         database_dir: PathBuf::from("data").join("db"),
-        cache_dir: Some(PathBuf::from("data").join("cache")),
+        cache_dir: Some(cache_dir.clone()),
         port: 5432,
         user: "postgres".to_string(),
         password: "password".to_string(),
@@ -61,6 +63,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // stop postgresql database
     pg.stop_db().await?;
+    PgAccess::purge(&cache_dir)?;
 
     Ok(())
 }
