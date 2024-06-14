@@ -5,7 +5,7 @@ use env_logger::Env;
 
 use pg_embed::pg_enums::PgAuthMethod;
 use pg_embed::pg_errors::PgEmbedError;
-use pg_embed::pg_fetch::{PG_V16, PgFetchSettings};
+use pg_embed::pg_fetch::{PG_V15, PgFetchSettings};
 use pg_embed::postgres::{PgEmbed, PgSettings};
 
 pub async fn setup(
@@ -34,7 +34,7 @@ pub async fn setup(
         migration_dir,
     };
     let fetch_settings = PgFetchSettings {
-        version: PG_V16,
+        version: PG_V15,
         ..Default::default()
     };
     let mut pg = PgEmbed::new(pg_settings, fetch_settings).await?;
