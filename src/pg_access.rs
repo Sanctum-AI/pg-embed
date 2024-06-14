@@ -66,9 +66,10 @@ impl PgAccess {
     ) -> Result<Self, PgEmbedError> {
         let cache_dir = match cache_dir {
             Some(d) => {
-                std::fs::create_dir_all(d).map_err(|e| PgEmbedError::DirCreationError { dir: d.clone(), e })?;
+                std::fs::create_dir_all(d)
+                    .map_err(|e| PgEmbedError::DirCreationError { dir: d.clone(), e })?;
                 d.clone()
-            },
+            }
             None => Self::create_cache_dir_structure(fetch_settings)?,
         };
 
@@ -125,12 +126,18 @@ impl PgAccess {
         );
         let mut cache_pg_embed = cache_dir.clone();
         cache_pg_embed.push(pg_path);
-        std::fs::create_dir_all(&cache_pg_embed).map_err(|e|PgEmbedError::DirCreationError { dir: cache_pg_embed.clone(), e })?;
+        std::fs::create_dir_all(&cache_pg_embed).map_err(|e| PgEmbedError::DirCreationError {
+            dir: cache_pg_embed.clone(),
+            e,
+        })?;
         Ok(cache_pg_embed)
     }
 
     fn create_db_dir_structure(db_dir: &PathBuf) -> PgResult<()> {
-        std::fs::create_dir_all(db_dir).map_err(|e| PgEmbedError::DirCreationError { dir: db_dir.clone(), e })?;
+        std::fs::create_dir_all(db_dir).map_err(|e| PgEmbedError::DirCreationError {
+            dir: db_dir.clone(),
+            e,
+        })?;
         Ok(())
     }
 
@@ -153,8 +160,10 @@ impl PgAccess {
             self.cache_dir.display()
         );
         pg_unpack::unpack_postgres(&self.zip_file_path, &self.cache_dir).await?;
-        std::fs::remove_file(&self.zip_file_path)
-            .map_err(|e| PgEmbedError::PgCleanUpFailure { path: self.zip_file_path.clone(), e })?;
+        std::fs::remove_file(&self.zip_file_path).map_err(|e| PgEmbedError::PgCleanUpFailure {
+            path: self.zip_file_path.clone(),
+            e,
+        })?;
 
         lock.insert(self.cache_dir.clone(), PgAcquisitionStatus::Finished);
         Ok(())
@@ -171,8 +180,7 @@ impl PgAccess {
     /// Check if database files exist
     ///
     pub async fn db_files_exist(&self) -> PgResult<bool> {
-        Ok(self.pg_executables_cached()?
-            && Self::path_exists(self.pg_version_file.as_path())?)
+        Ok(self.pg_executables_cached()? && Self::path_exists(self.pg_version_file.as_path())?)
     }
 
     ///
@@ -212,8 +220,17 @@ impl PgAccess {
     /// Write pg binaries zip to postgresql cache directory
     ///
     fn write_pg_zip(&self, bytes: &[u8]) -> PgResult<()> {
-        let mut file = std::fs::File::create(self.zip_file_path.as_path()).map_err(|e| PgEmbedError::WriteFileError { path: self.zip_file_path.clone(), e })?;
-        file.write(bytes).map_err(|e| PgEmbedError::WriteFileError { path: self.zip_file_path.clone(), e })?;
+        let mut file = std::fs::File::create(self.zip_file_path.as_path()).map_err(|e| {
+            PgEmbedError::WriteFileError {
+                path: self.zip_file_path.clone(),
+                e,
+            }
+        })?;
+        file.write(bytes)
+            .map_err(|e| PgEmbedError::WriteFileError {
+                path: self.zip_file_path.clone(),
+                e,
+            })?;
         Ok(())
     }
 
@@ -224,8 +241,18 @@ impl PgAccess {
     ///
     pub fn clean(&self) -> PgResult<()> {
         // not using tokio::fs async methods because clean() is called on drop
-        std::fs::remove_dir_all(self.database_dir.as_path()).map_err(|e| PgEmbedError::PgCleanUpFailure { path: self.database_dir.clone(), e})?;
-        std::fs::remove_file(self.pw_file_path.as_path()).map_err(|e| PgEmbedError::PgCleanUpFailure{ path: self.pw_file_path.clone(), e})?;
+        std::fs::remove_dir_all(self.database_dir.as_path()).map_err(|e| {
+            PgEmbedError::PgCleanUpFailure {
+                path: self.database_dir.clone(),
+                e,
+            }
+        })?;
+        std::fs::remove_file(self.pw_file_path.as_path()).map_err(|e| {
+            PgEmbedError::PgCleanUpFailure {
+                path: self.pw_file_path.clone(),
+                e,
+            }
+        })?;
         Ok(())
     }
 
@@ -234,10 +261,12 @@ impl PgAccess {
     ///
     /// Remove all cached postgresql executables
     ///
-    pub async fn purge() -> PgResult<()> {
-        if let Some(cache_dir) = &mut dirs::cache_dir() {
-            cache_dir.push(PG_EMBED_CACHE_DIR_NAME);
-            std::fs::remove_dir_all(&cache_dir).map_err(|e| PgEmbedError::PgCleanUpFailure { path: cache_dir.clone(), e })?;
+    pub fn purge(cache_dir: &Path) -> PgResult<()> {
+        if cache_dir.exists() {
+            std::fs::remove_dir_all(&cache_dir).map_err(|e| PgEmbedError::PgCleanUpFailure {
+                path: cache_dir.to_path_buf(),
+                e,
+            })?;
         }
         Ok(())
     }
@@ -246,10 +275,13 @@ impl PgAccess {
     /// Clean up database directory and password file
     ///
     pub async fn clean_up(database_dir: PathBuf, pw_file: PathBuf) -> PgResult<()> {
-        std::fs::remove_dir_all(&database_dir)
-            .map_err(|e| PgEmbedError::PgCleanUpFailure { path: database_dir, e })?;
+        std::fs::remove_dir_all(&database_dir).map_err(|e| PgEmbedError::PgCleanUpFailure {
+            path: database_dir,
+            e,
+        })?;
 
-        std::fs::remove_file(&pw_file).map_err(|e| PgEmbedError::PgCleanUpFailure { path: pw_file, e })
+        std::fs::remove_file(&pw_file)
+            .map_err(|e| PgEmbedError::PgCleanUpFailure { path: pw_file, e })
     }
 
     ///
@@ -258,11 +290,17 @@ impl PgAccess {
     /// Returns `Ok(())` on success, otherwise returns an error.
     ///
     pub fn create_password_file(&self, password: &[u8]) -> PgResult<()> {
-        let mut file = std::fs::File::create(self.pw_file_path.as_path())
-            .map_err(|e | PgEmbedError::WriteFileError { path: self.pw_file_path.clone(), e})?;
-        file
-            .write(password)
-            .map_err(|e| PgEmbedError::WriteFileError { path: self.pw_file_path.clone(), e})?;
+        let mut file = std::fs::File::create(self.pw_file_path.as_path()).map_err(|e| {
+            PgEmbedError::WriteFileError {
+                path: self.pw_file_path.clone(),
+                e,
+            }
+        })?;
+        file.write(password)
+            .map_err(|e| PgEmbedError::WriteFileError {
+                path: self.pw_file_path.clone(),
+                e,
+            })?;
         Ok(())
     }
 

@@ -9,7 +9,7 @@ use futures::TryFutureExt;
 use reqwest::Response;
 
 use crate::pg_enums::{Architecture, OperationSystem};
-use crate::pg_errors::{PgEmbedError};
+use crate::pg_errors::PgEmbedError;
 use crate::pg_types::PgResult;
 
 /// Postgresql version struct (simple version wrapper)
@@ -82,7 +82,9 @@ impl PgFetchSettings {
             &platform,
             version);
 
-        let response: Response = reqwest::get(download_url).map_err(PgEmbedError::DownloadFailure).await?;
+        let response: Response = reqwest::get(download_url)
+            .map_err(PgEmbedError::DownloadFailure)
+            .await?;
 
         let content: Bytes = response
             .bytes()

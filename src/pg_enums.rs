@@ -5,7 +5,7 @@
 use std::error::Error;
 
 use crate::command_executor::ProcessStatus;
-use crate::pg_errors::{PgEmbedError};
+use crate::pg_errors::PgEmbedError;
 
 ///
 /// Postgresql authentication method
@@ -93,7 +93,6 @@ impl ProcessStatus<PgServerStatus, PgEmbedError> for PgProcessType {
             source: Box::new(error),
             message,
         }
-
     }
 }
 
@@ -118,12 +117,16 @@ pub enum OperationSystem {
 
 impl std::fmt::Display for OperationSystem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            OperationSystem::Darwin => "darwin",
-            OperationSystem::Windows => "windows",
-            OperationSystem::Linux => "linux",
-            OperationSystem::AlpineLinux => "linux",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                OperationSystem::Darwin => "darwin",
+                OperationSystem::Windows => "windows",
+                OperationSystem::Linux => "linux",
+                OperationSystem::AlpineLinux => "linux",
+            }
+        )
     }
 }
 
@@ -159,7 +162,7 @@ pub enum Architecture {
 
 impl std::fmt::Display for Architecture {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s =match &self {
+        let s = match &self {
             Architecture::Amd64 => "amd64",
             Architecture::I386 => "i386",
             Architecture::Arm32v6 => "arm32v6",

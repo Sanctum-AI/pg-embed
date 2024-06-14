@@ -6,7 +6,6 @@ use std::path::PathBuf;
 use thiserror::Error;
 use zip::result::ZipError;
 
-
 ///
 /// Common pg_embed errors, independent of features used
 ///
@@ -22,7 +21,7 @@ pub enum PgEmbedError {
     #[error("Failed to unzip: {path} due to error {e}")]
     UnzipFileError { e: ZipError, path: PathBuf },
     #[error("Could not read file: {path} due to error {e}")]
-    ReadFileError{ e: std::io::Error, path: PathBuf },
+    ReadFileError { e: std::io::Error, path: PathBuf },
     /// Could not create directory
     #[error("Failed to create directory: {dir} error: {e}")]
     DirCreationError { dir: PathBuf, e: std::io::Error },

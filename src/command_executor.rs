@@ -157,11 +157,10 @@ where
 
     /// Run process
     async fn run_process(&mut self) -> Result<S, E> {
-        let exit_status = self
-            .process
-            .wait()
-            .await
-            .map_err(|e| self.process_type.wrap_error(e, "failed to run process".to_string()))?;
+        let exit_status = self.process.wait().await.map_err(|e| {
+            self.process_type
+                .wrap_error(e, "failed to run process".to_string())
+        })?;
         if exit_status.success() {
             Ok(self.process_type.status_exit())
         } else {
@@ -225,10 +224,7 @@ where
             None => self.command_execution().await,
             Some(duration) => tokio::time::timeout(duration, self.command_execution())
                 .await
-                .map_err(|e| {
-                    self.process_type
-                        .wrap_error(e, String::from("timed out"))
-                })?,
+                .map_err(|e| self.process_type.wrap_error(e, String::from("timed out")))?,
         }
     }
 }

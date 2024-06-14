@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use serial_test::serial;
 
-use pg_embed::pg_errors::{PgEmbedError};
+use pg_embed::pg_errors::PgEmbedError;
 #[cfg(feature = "sqlx_actix")]
 use sqlx_actix::{Connection, PgConnection};
 #[cfg(feature = "sqlx_async_std")]

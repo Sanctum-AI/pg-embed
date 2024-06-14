@@ -57,10 +57,10 @@ async fn postgres_server_drop() -> Result<(), PgEmbedError> {
 #[tokio::test]
 #[serial]
 async fn postgres_server_multiple_concurrent() -> Result<(), PgEmbedError> {
-    PgAccess::purge().await?;
+    PgAccess::purge(&PathBuf::from("data_test").join("cache"))?;
 
     let tasks = vec![
-        common::setup(5432, PathBuf::from(PathBuf::from("data_test").join("db1")), false, None),
+        common::setup(5432, PathBuf::from("data_test").join("db1"), false, None),
         common::setup(5434, PathBuf::from("data_test").join("db3"), false, None),
     ];
 
@@ -163,7 +163,10 @@ async fn postgres_server_timeout() -> Result<(), PgEmbedError> {
     let _ = pg.setup().await;
     pg.pg_settings.timeout = Some(Duration::from_millis(10));
     let res = pg.start_db().await.err().map(|e| e.to_string());
-    assert_eq!(Some("timed out due to error: deadline has elapsed".to_string()), res);
+    assert_eq!(
+        Some("timed out due to error: deadline has elapsed".to_string()),
+        res
+    );
 
     Ok(())
 }

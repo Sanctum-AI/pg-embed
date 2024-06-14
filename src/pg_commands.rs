@@ -3,7 +3,7 @@
 //!
 //! Command executors for initdb, pg_ctl start, pg_ctl stop
 //!
-use std::path::{Path};
+use std::path::Path;
 
 use crate::command_executor::{AsyncCommand, AsyncCommandExecutor};
 use crate::pg_enums::{PgAuthMethod, PgProcessType, PgServerStatus};

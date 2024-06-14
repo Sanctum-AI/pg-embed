@@ -25,7 +25,7 @@ use crate::command_executor::AsyncCommand;
 use crate::pg_access::PgAccess;
 use crate::pg_commands::PgCommand;
 use crate::pg_enums::{PgAuthMethod, PgServerStatus};
-use crate::pg_errors::{PgEmbedError};
+use crate::pg_errors::PgEmbedError;
 use crate::pg_fetch;
 use crate::pg_types::PgResult;
 
@@ -98,9 +98,7 @@ impl PgEmbed {
         let password: &str = &pg_settings.password;
         let db_uri = format!(
             "postgres://{}:{}@localhost:{}",
-            &pg_settings.user,
-            &password,
-            pg_settings.port
+            &pg_settings.user, &password, pg_settings.port
         );
         let pg_access = PgAccess::new(
             &fetch_settings,
@@ -300,15 +298,13 @@ impl PgEmbed {
     pub async fn migrate(&self, db_name: &str) -> PgResult<()> {
         if let Some(migration_dir) = &self.pg_settings.migration_dir {
             let m = Migrator::new(migration_dir.as_path())
-                .map_err( PgEmbedError::MigrationError)
+                .map_err(PgEmbedError::MigrationError)
                 .await?;
             let pool = PgPoolOptions::new()
                 .connect(&self.full_db_uri(db_name))
                 .map_err(PgEmbedError::SqlxError)
                 .await?;
-            m.run(&pool)
-                .map_err(PgEmbedError::MigrationError)
-                .await?;
+            m.run(&pool).map_err(PgEmbedError::MigrationError).await?;
         }
         Ok(())
     }
