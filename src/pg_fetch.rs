@@ -15,6 +15,13 @@ use crate::pg_types::PgResult;
 /// Postgresql version struct (simple version wrapper)
 #[derive(Debug, Copy, Clone)]
 pub struct PostgresVersion(pub &'static str);
+
+impl std::fmt::Display for PostgresVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 /// Latest postgres version 16
 pub const PG_V16: PostgresVersion = PostgresVersion("16.2.0");
 /// Latest postgres version 15
