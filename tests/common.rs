@@ -17,14 +17,14 @@ pub async fn setup(
     let _ = env_logger::Builder::from_env(Env::default().default_filter_or("info"))
         .is_test(true)
         .try_init();
-    // let cache_dir = PathBuf::from("data_test").join("cache");
-    // std::fs::create_dir_all(&cache_dir).map_err(|e| PgEmbedError::DirCreationError {
-    //     dir: cache_dir.clone(),
-    //     e,
-    // })?;
+    let cache_dir = PathBuf::from("data_test").join("cache");
+    std::fs::create_dir_all(&cache_dir).map_err(|e| PgEmbedError::DirCreationError {
+        dir: cache_dir.clone(),
+        e,
+    })?;
     let pg_settings = PgSettings {
         database_dir,
-        cache_dir: None,
+        cache_dir: Some(cache_dir),
         port,
         user: "postgres".to_string(),
         password: "password".to_string(),
