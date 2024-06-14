@@ -25,7 +25,7 @@ use crate::command_executor::AsyncCommand;
 use crate::pg_access::PgAccess;
 use crate::pg_commands::PgCommand;
 use crate::pg_enums::{PgAuthMethod, PgServerStatus};
-use crate::pg_errors::{PgEmbedError, PgEmbedErrorType};
+use crate::pg_errors::{PgEmbedError};
 use crate::pg_fetch;
 use crate::pg_types::PgResult;
 
@@ -100,7 +100,7 @@ impl PgEmbed {
             "postgres://{}:{}@localhost:{}",
             &pg_settings.user,
             &password,
-            pg_settings.port.to_string()
+            pg_settings.port
         );
         let pg_access = PgAccess::new(
             &fetch_settings,
@@ -126,8 +126,7 @@ impl PgEmbed {
     pub async fn setup(&mut self) -> PgResult<()> {
         self.pg_access.maybe_acquire_postgres().await?;
         self.pg_access
-            .create_password_file(self.pg_settings.password.as_bytes())
-            .await?;
+            .create_password_file(self.pg_settings.password.as_bytes())?;
         if self.pg_access.db_files_exist().await? {
             let mut server_status = self.server_status.lock().await;
             *server_status = PgServerStatus::Initialized;
@@ -217,10 +216,9 @@ impl PgEmbed {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .map_err(|e| PgEmbedError {
-                error_type: PgEmbedErrorType::PgError,
-                source: Some(Box::new(e)),
-                message: None,
+            .map_err(|e| PgEmbedError::PgError {
+                source: Box::new(e),
+                message: "stop database".to_string(),
             })?;
 
         self.handle_process_io_sync(process)
@@ -247,11 +245,7 @@ impl PgEmbed {
     ))]
     pub async fn create_database(&self, db_name: &str) -> PgResult<()> {
         Postgres::create_database(&self.full_db_uri(db_name))
-            .map_err(|e| PgEmbedError {
-                error_type: PgEmbedErrorType::PgTaskJoinError,
-                source: Some(Box::new(e)),
-                message: None,
-            })
+            .map_err(PgEmbedError::SqlxError)
             .await?;
         Ok(())
     }
@@ -266,11 +260,7 @@ impl PgEmbed {
     ))]
     pub async fn drop_database(&self, db_name: &str) -> PgResult<()> {
         Postgres::drop_database(&self.full_db_uri(db_name))
-            .map_err(|e| PgEmbedError {
-                error_type: PgEmbedErrorType::PgTaskJoinError,
-                source: Some(Box::new(e)),
-                message: None,
-            })
+            .map_err(PgEmbedError::SqlxError)
             .await?;
         Ok(())
     }
@@ -285,11 +275,7 @@ impl PgEmbed {
     ))]
     pub async fn database_exists(&self, db_name: &str) -> PgResult<bool> {
         let result = Postgres::database_exists(&self.full_db_uri(db_name))
-            .map_err(|e| PgEmbedError {
-                error_type: PgEmbedErrorType::PgTaskJoinError,
-                source: Some(Box::new(e)),
-                message: None,
-            })
+            .map_err(PgEmbedError::SqlxError)
             .await?;
         Ok(result)
     }
@@ -314,26 +300,14 @@ impl PgEmbed {
     pub async fn migrate(&self, db_name: &str) -> PgResult<()> {
         if let Some(migration_dir) = &self.pg_settings.migration_dir {
             let m = Migrator::new(migration_dir.as_path())
-                .map_err(|e| PgEmbedError {
-                    error_type: PgEmbedErrorType::MigrationError,
-                    source: Some(Box::new(e)),
-                    message: None,
-                })
+                .map_err( PgEmbedError::MigrationError)
                 .await?;
             let pool = PgPoolOptions::new()
                 .connect(&self.full_db_uri(db_name))
-                .map_err(|e| PgEmbedError {
-                    error_type: PgEmbedErrorType::SqlQueryError,
-                    source: Some(Box::new(e)),
-                    message: None,
-                })
+                .map_err(PgEmbedError::SqlxError)
                 .await?;
             m.run(&pool)
-                .map_err(|e| PgEmbedError {
-                    error_type: PgEmbedErrorType::MigrationError,
-                    source: Some(Box::new(e)),
-                    message: None,
-                })
+                .map_err(PgEmbedError::MigrationError)
                 .await?;
         }
         Ok(())

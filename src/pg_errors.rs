@@ -1,78 +1,54 @@
 //!
 //! Errors
 //!
-use std::error::Error;
 
-use std::fmt;
-use std::fmt::Formatter;
+use std::path::PathBuf;
 use thiserror::Error;
+use zip::result::ZipError;
+
 
 ///
-/// PgEmbed errors
+/// Common pg_embed errors, independent of features used
+///
 #[derive(Error, Debug)]
-pub struct PgEmbedError {
-    pub error_type: PgEmbedErrorType,
-    pub source: Option<Box<dyn Error + Sync + Send>>,
-    pub message: Option<String>,
-}
-
-impl fmt::Display for PgEmbedError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "error_type: {:?}\nsource: \n{:?}\nmessage: \n{:?}\n",
-            self.error_type, self.source, self.message
-        )
-    }
-}
-
-///
-/// Common pg_embed errors, independent from features used
-///
-#[derive(Debug, PartialEq)]
-pub enum PgEmbedErrorType {
+pub enum PgEmbedError {
     /// Invalid postgresql binaries download url
-    InvalidPgUrl,
-    /// Invalid postgresql binaries package
+    #[error("System does not have standard cache directory")]
+    NoSystemCacheDirectory,
+    #[error("Invalid postgresql binaries package")]
     InvalidPgPackage,
-    /// Could not write file
-    WriteFileError,
-    /// Could not read file
-    ReadFileError,
+    #[error("Could not write file: {path} due to error {e}")]
+    WriteFileError { e: std::io::Error, path: PathBuf },
+    #[error("Failed to unzip: {path} due to error {e}")]
+    UnzipFileError { e: ZipError, path: PathBuf },
+    #[error("Could not read file: {path} due to error {e}")]
+    ReadFileError{ e: std::io::Error, path: PathBuf },
     /// Could not create directory
-    DirCreationError,
+    #[error("Failed to create directory: {dir} error: {e}")]
+    DirCreationError { dir: PathBuf, e: std::io::Error },
     /// Failed to unpack postgresql binaries
-    UnpackFailure,
-    /// Postgresql could not be started
+    #[error("Failed to unpack postgresql binaries: {0}")]
+    UnpackFailure(#[from] std::io::Error),
+    #[error("Postgresql could not be started")]
     PgStartFailure,
-    /// Postgresql could not be stopped
+    #[error("Postgresql could not be stopped")]
     PgStopFailure,
     /// Postgresql could not be initialized
+    #[error("Failed to initialize postgres database")]
     PgInitFailure,
     /// Clean up error
-    PgCleanUpFailure,
-    /// Purging error
-    PgPurgeFailure,
-    /// Buffer read error
-    PgBufferReadError,
-    /// Lock error
-    PgLockError,
-    /// Child process error
-    PgProcessError,
-    /// Timed out error
-    PgTimedOutError,
+    #[error("Failed to remove {path} due to {e}")]
+    PgCleanUpFailure { e: std::io::Error, path: PathBuf },
     /// Task join error
-    PgTaskJoinError,
-    /// Error wrapper
-    PgError,
-    /// Postgresql binaries download failure
-    DownloadFailure,
-    /// Request response bytes convertion failure
-    ConversionFailure,
-    /// Channel send error
-    SendFailure,
-    /// sqlx query error
-    SqlQueryError,
-    /// migration error
-    MigrationError,
+    #[error("{message} due to error: {source}")]
+    PgError {
+        source: Box<dyn std::error::Error + Sync + Send + 'static>,
+        message: String,
+    },
+    #[error("Download failure: {0}")]
+    DownloadFailure(#[from] reqwest::Error),
+    #[error("Sqlx query error: {0}")]
+    SqlxError(#[from] sqlx_tokio::error::Error),
+    #[error("Migration error: {0}")]
+    MigrationError(#[from] sqlx_tokio::migrate::MigrateError),
 }

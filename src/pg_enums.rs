@@ -5,7 +5,7 @@
 use std::error::Error;
 
 use crate::command_executor::ProcessStatus;
-use crate::pg_errors::{PgEmbedError, PgEmbedErrorType};
+use crate::pg_errors::{PgEmbedError};
 
 ///
 /// Postgresql authentication method
@@ -78,43 +78,31 @@ impl ProcessStatus<PgServerStatus, PgEmbedError> for PgProcessType {
 
     fn error_type(&self) -> PgEmbedError {
         match self {
-            PgProcessType::InitDb => PgEmbedError {
-                error_type: PgEmbedErrorType::PgInitFailure,
-                source: None,
-                message: None,
-            },
-            PgProcessType::StartDb => PgEmbedError {
-                error_type: PgEmbedErrorType::PgStartFailure,
-                source: None,
-                message: None,
-            },
-            PgProcessType::StopDb => PgEmbedError {
-                error_type: PgEmbedErrorType::PgStopFailure,
-                source: None,
-                message: None,
-            },
+            PgProcessType::InitDb => PgEmbedError::PgInitFailure,
+            PgProcessType::StartDb => PgEmbedError::PgStartFailure,
+            PgProcessType::StopDb => PgEmbedError::PgStopFailure,
         }
     }
 
     fn wrap_error<E: Error + Sync + Send + 'static>(
         &self,
         error: E,
-        message: Option<String>,
+        message: String,
     ) -> PgEmbedError {
-        PgEmbedError {
-            error_type: PgEmbedErrorType::PgError,
-            source: Some(Box::new(error)),
+        PgEmbedError::PgError {
+            source: Box::new(error),
             message,
         }
+
     }
 }
 
-impl ToString for PgProcessType {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for PgProcessType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PgProcessType::InitDb => "initdb".to_string(),
-            PgProcessType::StartDb => "start".to_string(),
-            PgProcessType::StopDb => "stop".to_string(),
+            PgProcessType::InitDb => write!(f, "initdb"),
+            PgProcessType::StartDb => write!(f, "start"),
+            PgProcessType::StopDb => write!(f, "stop"),
         }
     }
 }
@@ -128,14 +116,14 @@ pub enum OperationSystem {
     AlpineLinux,
 }
 
-impl ToString for OperationSystem {
-    fn to_string(&self) -> String {
-        match &self {
-            OperationSystem::Darwin => "darwin".to_string(),
-            OperationSystem::Windows => "windows".to_string(),
-            OperationSystem::Linux => "linux".to_string(),
-            OperationSystem::AlpineLinux => "linux".to_string(),
-        }
+impl std::fmt::Display for OperationSystem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            OperationSystem::Darwin => "darwin",
+            OperationSystem::Windows => "windows",
+            OperationSystem::Linux => "linux",
+            OperationSystem::AlpineLinux => "linux",
+        })
     }
 }
 
@@ -169,16 +157,17 @@ pub enum Architecture {
     Ppc64le,
 }
 
-impl ToString for Architecture {
-    fn to_string(&self) -> String {
-        match &self {
-            Architecture::Amd64 => "amd64".to_string(),
-            Architecture::I386 => "i386".to_string(),
-            Architecture::Arm32v6 => "arm32v6".to_string(),
-            Architecture::Arm32v7 => "arm32v7".to_string(),
-            Architecture::Arm64v8 => "arm64v8".to_string(),
-            Architecture::Ppc64le => "ppc64le".to_string(),
-        }
+impl std::fmt::Display for Architecture {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s =match &self {
+            Architecture::Amd64 => "amd64",
+            Architecture::I386 => "i386",
+            Architecture::Arm32v6 => "arm32v6",
+            Architecture::Arm32v7 => "arm32v7",
+            Architecture::Arm64v8 => "arm64v8",
+            Architecture::Ppc64le => "ppc64le",
+        };
+        write!(f, "{s}")
     }
 }
 

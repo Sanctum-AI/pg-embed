@@ -3,7 +3,7 @@
 //!
 //! Command executors for initdb, pg_ctl start, pg_ctl stop
 //!
-use std::path::PathBuf;
+use std::path::{Path};
 
 use crate::command_executor::{AsyncCommand, AsyncCommandExecutor};
 use crate::pg_enums::{PgAuthMethod, PgProcessType, PgServerStatus};
@@ -20,9 +20,9 @@ impl PgCommand {
     /// Create initdb command
     ///
     pub fn init_db_executor(
-        init_db_exe: &PathBuf,
-        database_dir: &PathBuf,
-        pw_file_path: &PathBuf,
+        init_db_exe: &Path,
+        database_dir: &Path,
+        pw_file_path: &Path,
         user: &str,
         auth_method: &PgAuthMethod,
     ) -> PgResult<AsyncCommandExecutor<PgServerStatus, PgEmbedError, PgProcessType>> {
@@ -64,12 +64,12 @@ impl PgCommand {
     /// Create pg_ctl start command
     ///
     pub fn start_db_executor(
-        pg_ctl_exe: &PathBuf,
-        database_dir: &PathBuf,
+        pg_ctl_exe: &Path,
+        database_dir: &Path,
         port: &u16,
     ) -> PgResult<AsyncCommandExecutor<PgServerStatus, PgEmbedError, PgProcessType>> {
         let pg_ctl_executable = pg_ctl_exe.as_os_str();
-        let port_arg = format!("-F -p {}", port.to_string());
+        let port_arg = format!("-F -p {}", port);
         let args = [
             "-o",
             &port_arg,
@@ -92,8 +92,8 @@ impl PgCommand {
     /// Create pg_ctl stop command
     ///
     pub fn stop_db_executor(
-        pg_ctl_exe: &PathBuf,
-        database_dir: &PathBuf,
+        pg_ctl_exe: &Path,
+        database_dir: &Path,
     ) -> PgResult<AsyncCommandExecutor<PgServerStatus, PgEmbedError, PgProcessType>> {
         let pg_ctl_executable = pg_ctl_exe.as_os_str();
         let args = ["stop", "-w", "-D", database_dir.to_str().unwrap()];

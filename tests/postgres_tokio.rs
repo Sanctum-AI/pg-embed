@@ -162,8 +162,8 @@ async fn postgres_server_timeout() -> Result<(), PgEmbedError> {
     let mut pg = PgEmbed::new(pg_settings, fetch_settings).await?;
     let _ = pg.setup().await;
     pg.pg_settings.timeout = Some(Duration::from_millis(10));
-    let res = pg.start_db().await.err().map(|e| e.message).flatten();
-    assert_eq!(Some("timed out".to_string()), res);
+    let res = pg.start_db().await.err().map(|e| e.to_string());
+    assert_eq!(Some("timed out due to error: deadline has elapsed".to_string()), res);
 
     Ok(())
 }

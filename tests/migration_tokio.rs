@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use serial_test::serial;
 
-use pg_embed::pg_errors::{PgEmbedError, PgEmbedErrorType};
+use pg_embed::pg_errors::{PgEmbedError};
 #[cfg(feature = "sqlx_actix")]
 use sqlx_actix::{Connection, PgConnection};
 #[cfg(feature = "sqlx_async_std")]
@@ -60,29 +60,17 @@ async fn db_migration() -> Result<(), PgEmbedError> {
 
     let mut conn = PgConnection::connect(&db_uri)
         .await
-        .map_err(|_| PgEmbedError {
-            error_type: PgEmbedErrorType::SqlQueryError,
-            source: None,
-            message: None,
-        })?;
+        .map_err(PgEmbedError::SqlxError)?;
 
     let _ = sqlx_tokio::query("INSERT INTO testing (description) VALUES ('Hello')")
         .execute(&mut conn)
         .await
-        .map_err(|_| PgEmbedError {
-            error_type: PgEmbedErrorType::SqlQueryError,
-            source: None,
-            message: None,
-        })?;
+        .map_err(PgEmbedError::SqlxError)?;
 
     let rows = sqlx_tokio::query("SELECT * FROM testing")
         .fetch_all(&mut conn)
         .await
-        .map_err(|_| PgEmbedError {
-            error_type: PgEmbedErrorType::SqlQueryError,
-            source: None,
-            message: None,
-        })?;
+        .map_err(PgEmbedError::SqlxError)?;
 
     assert_eq!(1, rows.len());
 

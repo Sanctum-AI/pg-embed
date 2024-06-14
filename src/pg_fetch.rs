@@ -9,7 +9,7 @@ use futures::TryFutureExt;
 use reqwest::Response;
 
 use crate::pg_enums::{Architecture, OperationSystem};
-use crate::pg_errors::{PgEmbedError, PgEmbedErrorType};
+use crate::pg_errors::{PgEmbedError};
 use crate::pg_types::PgResult;
 
 /// Postgresql version struct (simple version wrapper)
@@ -59,7 +59,7 @@ impl PgFetchSettings {
     pub fn platform(&self) -> String {
         let os = self.operating_system.to_string();
         let arch = if self.operating_system == OperationSystem::AlpineLinux {
-            format!("{}-{}", self.architecture.to_string(), "alpine")
+            format!("{}-{}", self.architecture, "alpine")
         } else {
             self.architecture.to_string()
         };
@@ -82,21 +82,11 @@ impl PgFetchSettings {
             &platform,
             version);
 
-        let response: Response = reqwest::get(download_url)
-            .map_err(|e| PgEmbedError {
-                error_type: PgEmbedErrorType::DownloadFailure,
-                source: Some(Box::new(e)),
-                message: None,
-            })
-            .await?;
+        let response: Response = reqwest::get(download_url).map_err(PgEmbedError::DownloadFailure).await?;
 
         let content: Bytes = response
             .bytes()
-            .map_err(|e| PgEmbedError {
-                error_type: PgEmbedErrorType::ConversionFailure,
-                source: Some(Box::new(e)),
-                message: None,
-            })
+            .map_err(PgEmbedError::DownloadFailure)
             .await?;
 
         log::debug!("Downloaded {} bytes", content.len());

@@ -37,7 +37,7 @@ where
     /// process error type
     fn error_type(&self) -> E;
     /// wrap error
-    fn wrap_error<F: Error + Sync + Send + 'static>(&self, error: F, message: Option<String>) -> E;
+    fn wrap_error<F: Error + Sync + Send + 'static>(&self, error: F, message: String) -> E;
 }
 
 ///
@@ -127,7 +127,7 @@ where
     }
 
     /// Handle process output
-    async fn handle_output<R: AsyncRead + Unpin>(data: R, sender: Sender<LogOutputData>) -> () {
+    async fn handle_output<R: AsyncRead + Unpin>(data: R, sender: Sender<LogOutputData>) {
         let mut lines = BufReader::new(data).lines();
         while let Some(line) = lines.next_line().await.expect("error handling output") {
             let io_data = LogOutputData {
@@ -142,7 +142,7 @@ where
     }
 
     /// Log process output
-    async fn log_output(mut receiver: Receiver<LogOutputData>) -> () {
+    async fn log_output(mut receiver: Receiver<LogOutputData>) {
         while let Some(data) = receiver.recv().await {
             match data.log_type {
                 LogType::Info => {
@@ -161,7 +161,7 @@ where
             .process
             .wait()
             .await
-            .map_err(|e| self.process_type.wrap_error(e, None))?;
+            .map_err(|e| self.process_type.wrap_error(e, "failed to run process".to_string()))?;
         if exit_status.success() {
             Ok(self.process_type.status_exit())
         } else {
@@ -227,7 +227,7 @@ where
                 .await
                 .map_err(|e| {
                     self.process_type
-                        .wrap_error(e, Some(String::from("timed out")))
+                        .wrap_error(e, String::from("timed out"))
                 })?,
         }
     }
