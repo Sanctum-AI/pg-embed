@@ -1,11 +1,13 @@
-use pg_embed::pg_access::PgAccess;
-use pg_embed::pg_enums::PgAuthMethod;
-use pg_embed::pg_fetch::{PgFetchSettings, PG_V16};
-use pg_embed::postgres::{PgEmbed, PgSettings};
-use sqlx_tokio::postgres::PgPoolOptions;
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;
+
+use sqlx_tokio::postgres::PgPoolOptions;
+
+use pg_embed::pg_access::PgAccess;
+use pg_embed::pg_enums::PgAuthMethod;
+use pg_embed::pg_fetch::{PG_V16, PgFetchSettings};
+use pg_embed::postgres::{PgEmbed, PgSettings};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -47,14 +49,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // start postgresql database
     pg.start_db().await?;
 
-    pg.create_database("database_name").await?;
+    if !pg.database_exists("database_name").await? {
+        pg.create_database("database_name").await?;
+    }
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&pg.full_db_uri("database_name"))
         .await?;
 
-    let row: (i64,) = sqlx_tokio::query_as("SELECT $1")
+    let row: (i64, ) = sqlx_tokio::query_as("SELECT $1")
         .bind(150_i64)
         .fetch_one(&pool)
         .await?;
