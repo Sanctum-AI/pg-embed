@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
 use serial_test::serial;
+#[cfg(feature = "sqlx_tokio")]
+use sqlx_tokio::{Connection, PgConnection};
 
 use pg_embed::pg_errors::PgEmbedError;
 #[cfg(feature = "sqlx_actix")]
 use sqlx_actix::{Connection, PgConnection};
 #[cfg(feature = "sqlx_async_std")]
 use sqlx_async_std::{Connection, PgConnection};
-#[cfg(feature = "sqlx_tokio")]
-use sqlx_tokio::{Connection, PgConnection};
 
 #[path = "common.rs"]
 mod common;
@@ -49,7 +49,7 @@ async fn db_migration() -> Result<(), PgEmbedError> {
         false,
         Some(PathBuf::from("migration_test")),
     )
-    .await?;
+        .await?;
     pg.start_db().await?;
     let db_name = "test";
     pg.create_database(&db_name).await?;

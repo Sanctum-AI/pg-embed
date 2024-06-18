@@ -123,15 +123,12 @@ impl PgAccess {
                 format!("arch_{}", fetch_settings.operating_system)
             }
         };
-        let pg_path = format!(
-            "{}/{}/{}/{}",
-            PG_EMBED_CACHE_DIR_NAME,
-            os_string,
-            fetch_settings.architecture,
-            fetch_settings.version.0
-        );
-        let mut cache_pg_embed = cache_dir.clone();
-        cache_pg_embed.push(pg_path);
+        let cache_pg_embed = cache_dir
+            .clone()
+            .join(PG_EMBED_CACHE_DIR_NAME)
+            .join(os_string)
+            .join(fetch_settings.architecture.to_string())
+            .join(fetch_settings.version.0);
         std::fs::create_dir_all(&cache_pg_embed).map_err(|e| PgEmbedError::DirCreationError {
             dir: cache_pg_embed.clone(),
             e,

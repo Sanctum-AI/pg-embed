@@ -5,7 +5,7 @@ use env_logger::Env;
 
 use pg_embed::pg_enums::PgAuthMethod;
 use pg_embed::pg_errors::PgEmbedError;
-use pg_embed::pg_fetch::{PG_V15, PgFetchSettings};
+use pg_embed::pg_fetch::{PgFetchSettings, PG_V15};
 use pg_embed::postgres::{PgEmbed, PgSettings};
 
 pub async fn setup(

@@ -64,7 +64,7 @@ where
     ///
     fn new<A, B>(executable_path: &OsStr, args: A, process_type: P) -> Result<Self, E>
     where
-        A: IntoIterator<Item = B>,
+        A: IntoIterator<Item=B>,
         B: AsRef<OsStr>;
     ///
     /// Execute command
@@ -113,11 +113,12 @@ where
     /// Generate a command
     fn generate_command<A, B>(executable_path: &OsStr, args: A) -> tokio::process::Command
     where
-        A: IntoIterator<Item = B>,
+        A: IntoIterator<Item=B>,
         B: AsRef<OsStr>,
     {
         let mut command = tokio::process::Command::new(executable_path);
         command.args(args);
+        log::info!("command: {:?}", command);
         #[cfg(target_os = "windows")]
         {
             const CREATE_NO_WINDOW: u32 = 0x08000000;
@@ -205,7 +206,7 @@ where
 {
     fn new<A, B>(executable_path: &OsStr, args: A, process_type: P) -> Result<Self, E>
     where
-        A: IntoIterator<Item = B>,
+        A: IntoIterator<Item=B>,
         B: AsRef<OsStr>,
     {
         let mut _command = Self::generate_command(executable_path, args);

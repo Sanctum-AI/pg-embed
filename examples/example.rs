@@ -6,7 +6,7 @@ use sqlx_tokio::postgres::PgPoolOptions;
 
 use pg_embed::pg_access::PgAccess;
 use pg_embed::pg_enums::PgAuthMethod;
-use pg_embed::pg_fetch::{PG_V16, PgFetchSettings};
+use pg_embed::pg_fetch::{PgFetchSettings, PG_V16};
 use pg_embed::postgres::{PgEmbed, PgSettings};
 
 #[tokio::main]
@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .connect(&pg.full_db_uri("database_name"))
         .await?;
 
-    let row: (i64, ) = sqlx_tokio::query_as("SELECT $1")
+    let row: (i64,) = sqlx_tokio::query_as("SELECT $1")
         .bind(150_i64)
         .fetch_one(&pool)
         .await?;
