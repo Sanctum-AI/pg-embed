@@ -75,9 +75,15 @@ impl PgAccess {
 
         Self::create_db_dir_structure(database_dir)?;
         // pg_ctl executable
+        #[cfg(not(target_os = "windows"))]
         let pg_ctl = cache_dir.clone().join("bin").join("pg_ctl");
+        #[cfg(target_os = "windows")]
+        let pg_ctl = cache_dir.clone().join("bin").join("pg_ctl.exe");
         // initdb executable
+        #[cfg(not(target_os = "windows"))]
         let init_db = cache_dir.clone().join("bin").join("initdb");
+        #[cfg(target_os = "windows")]
+        let init_db = cache_dir.clone().join("bin").join("initdb.exe");
         // postgres zip file
         let mut zip_file_path = cache_dir.clone();
         let platform = fetch_settings.platform();
